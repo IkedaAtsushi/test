@@ -15,7 +15,7 @@ public class ShakeScript : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        _initPosition = transform.position;
+      
     }
     /// <summary>
     /// 揺れ開始
@@ -29,6 +29,7 @@ public class ShakeScript : MonoBehaviour
     {
         if(collision.gameObject.tag == "Player")
         {
+            _initPosition = transform.position;
             StartShake(_duration, _strength, _vibrato, _randomness, _fadeOut);
         }
     }
