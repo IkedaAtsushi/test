@@ -20,9 +20,9 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float _knockbackForce = 3f;
     [Tooltip("ノックバックの長さ")]
     [SerializeField] float _knockbackTime;
-    int _life;
+    public int _life;
     float _timer;
-    bool down = false;
+    public bool down = false;
     Rigidbody2D _rb = default;
     Animator _animator;
     float _h;
@@ -40,6 +40,7 @@ public class PlayerController : MonoBehaviour
         _fillimage = _lifeGauge.fillRect.GetComponent<Image>();
         originalColor = _fillimage.color;
         this._animator = GetComponent<Animator>();
+        this.gameObject.layer = 8;
     }
 
     // Update is called once per frame
@@ -68,8 +69,13 @@ public class PlayerController : MonoBehaviour
                 {
                     _fillimage.color = originalColor;
                     _life = _maxLife;
+                    this.gameObject.layer = 8;
                     down = false;
                 }
+            }
+            if (_timer >= _knockbackTime)
+            {
+                _rb.velocity = new Vector2(0, 0);
             }
         }
         // ライフ表示処理（ゲージ）
@@ -77,26 +83,29 @@ public class PlayerController : MonoBehaviour
         //Debug.Log(_lifeGauge.value);
     }
 
-    public void OnDamage(int damage, float xDirection, float yDirection)
+    public void OnDamagePlayer(int damage, float xDirection, float yDirection)
     {
-        _life = _life - damage;
-        _timer = 0;
-        Vector2 thisPos = transform.position;
-        float xDistination = thisPos.x - xDirection;
-        float yDistination = thisPos.y - yDirection;
-        Vector2 knockback = new Vector2(xDistination * _knockbackForce, yDistination * _knockbackForce);
-        _rb.velocity = knockback;
-
-        if (_life <= 0)
+        if (!down)
         {
-            _life = 0;
-            down = true;
-            Invoke(nameof(Down), _knockbackTime);
+            _life = _life - damage;
+            _timer = 0;
+            if (_life <= 0)
+            {
+                _life = 0;
+                down = true;
+                Invoke(nameof(Down), _knockbackTime);
+            }
+            Vector2 thisPos = transform.position;
+            float xDistination = thisPos.x - xDirection;
+            float yDistination = thisPos.y - yDirection;
+            Vector2 knockback = new Vector2(xDistination * _knockbackForce, yDistination * _knockbackForce);
+            _rb.velocity = knockback;
         }
     }
 
     void Down()
     {
+        this.gameObject.layer = 7;
         _rb.velocity = new Vector2(0, 0);
     }
 }
