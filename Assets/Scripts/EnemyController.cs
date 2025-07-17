@@ -55,7 +55,7 @@ public class EnemyController : MonoBehaviour
                 float xPos = thisPos.x;
                 float yPos = thisPos.y;
                 _playerController.OnDamagePlayer(_enemyAttackPower, xPos, yPos);
-                if (_playerController._life > 0)
+                if (!_playerController.down)
                 {
                     if (_enemyHP > 0)
                     {

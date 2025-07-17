@@ -18,7 +18,6 @@ public class ItemBase : MonoBehaviour
     {
         if (collision.gameObject.tag == "Player")
         {
-
             Destroy(this.gameObject);
         }
     }
