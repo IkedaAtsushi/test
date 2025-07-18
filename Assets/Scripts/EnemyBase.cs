@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class EnemyController : MonoBehaviour
+public class EnemyBase : MonoBehaviour
 {
     [Tooltip("敵のHP")]
     [SerializeField] int _enemyHP = 5;
@@ -72,21 +72,24 @@ public class EnemyController : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.gameObject.tag == "Castle")
+        if (!_knockback)
         {
-            _castleControler.OnDamageCastle(_enemyAttackPower);
-            Debug.Log("ノックバック");
-            _knockback = true;
-            _timer = 0;
-            Vector2 thisPos = transform.position;
-            Vector2 castlePos = _castle.transform.position;
-            float xDistination = thisPos.x - castlePos.x;
-            float yDistination = thisPos.y - castlePos.y;
-            Vector2 knockback = new Vector2(xDistination, yDistination);
-            _rb.velocity = knockback * _knockbackForce;
+            if (collision.gameObject.tag == "Castle")
+            {
+                _castleControler.OnDamageCastle(_enemyAttackPower);
+                Debug.Log("ノックバック");
+                _knockback = true;
+                _timer = 0;
+                Vector2 thisPos = transform.position;
+                Vector2 castlePos = _castle.transform.position;
+                float xDistination = thisPos.x - castlePos.x;
+                float yDistination = thisPos.y - castlePos.y;
+                Vector2 knockback = new Vector2(xDistination, yDistination);
+                _rb.velocity = knockback * _knockbackForce;
+            }
         }
     }
-    void Homing()
+    public virtual void Homing()
     {
         Vector2 castlePos = _castle.transform.position;
         float x = castlePos.x;

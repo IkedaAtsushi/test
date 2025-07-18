@@ -12,6 +12,10 @@ public class PlayerController : MonoBehaviour
     [SerializeField] Slider _lifeGauge;
     [Tooltip("体力の回復量")]
     [SerializeField] int _recoveryLife;
+    [Tooltip("MPの最大値")]
+    [SerializeField] int _maxMagicPower;
+    [Tooltip("MPを表示するゲージ")]
+    [SerializeField] Slider _magicPowerGauge;
     [Tooltip("攻撃力")]
     [SerializeField] public int _playerAttackPower;
     [Tooltip("プレイヤーの速さ")]
@@ -21,6 +25,7 @@ public class PlayerController : MonoBehaviour
     [Tooltip("ノックバックの長さ")]
     [SerializeField] float _knockbackTime;
     public int _life;
+    public static int _magicPower;
     float _timer;
     public bool down = false;
     Rigidbody2D _rb = default;
@@ -35,6 +40,8 @@ public class PlayerController : MonoBehaviour
     {
         _life = _maxLife;
         _lifeGauge.maxValue = _maxLife;
+        _magicPower = 0;
+        _magicPowerGauge.maxValue = _maxMagicPower;
         _timer = 1;
         _rb = GetComponent<Rigidbody2D>();
         _fillimage = _lifeGauge.fillRect.GetComponent<Image>();
@@ -81,6 +88,7 @@ public class PlayerController : MonoBehaviour
         // ライフ表示処理（ゲージ）
         _lifeGauge.value = _life;
         //Debug.Log(_lifeGauge.value);
+        _magicPowerGauge.value = _magicPower;
     }
 
     public void OnDamagePlayer(int damage, float xDirection, float yDirection)
@@ -103,6 +111,10 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    public static void GetMP(int mp)
+    {
+        _magicPower += mp;
+    }
     void Down()
     {
         this.gameObject.layer = 7;
