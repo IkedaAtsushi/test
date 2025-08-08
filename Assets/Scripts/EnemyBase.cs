@@ -1,4 +1,6 @@
 using UnityEngine;
+using DG.Tweening;
+
 
 public class EnemyBase : MonoBehaviour
 {
@@ -22,6 +24,14 @@ public class EnemyBase : MonoBehaviour
     Rigidbody2D _rb;
     bool _knockback = false;
     float _timer = 0;
+
+    [SerializeField] float _duration;
+    [SerializeField] float _strength;
+    [SerializeField] int _vibrato;
+    [SerializeField] float _randomness;
+    bool _fadeOut;
+    private Tweener _shakeTweener;
+    private Vector3 _initPosition;
     // Start is called before the first frame update
     void Start()
     {
@@ -54,19 +64,44 @@ public class EnemyBase : MonoBehaviour
                 Vector2 thisPos = transform.position;
                 float xPos = thisPos.x;
                 float yPos = thisPos.y;
-                _playerController.OnDamagePlayer(_enemyAttackPower, xPos, yPos);
-                if (!_playerController.down)
+                if (!_playerController._down)
                 {
                     if (_enemyHP > 0)
                     {
-                        _enemyHP -= _playerController._playerAttackPower;
+                        if (_playerController._powerup)
+                        {
+                            _knockback = true;
+                            _timer = 0;
+                            float xDis = thisPos.x - _player.transform.position.x;
+                            float yDis = thisPos.y - _player.transform.position.y;
+                            Vector2 kb = new Vector2(xDis, yDis);
+                            _rb.velocity = kb * _knockbackForce * 1.4f;
+
+                            float p = (float)_playerController._playerAttackPower;
+                            p *= 1.5f;
+                            int _p = (int)p;
+                            _enemyHP -= _p;
+                        }
+                        else
+                        {
+                            _playerController.OnDamagePlayer(_enemyAttackPower, xPos, yPos);
+                            _enemyHP -= _playerController._playerAttackPower;
+                            _initPosition = transform.position;
+                            StartShake(_duration, _strength, _vibrato, _randomness, _fadeOut);
+                        }
                     }
                     if (_enemyHP <= 0)
                     {
+                        for (int i = 0; i < _numCoin; i++)
+                        {
+                            Instantiate(_coin, transform.position, Quaternion.identity);
+                        }
                         Destroy(this.gameObject);
                     }
                 }
             }
+
+            
         }
     }
 
@@ -77,7 +112,7 @@ public class EnemyBase : MonoBehaviour
             if (collision.gameObject.tag == "Castle")
             {
                 _castleControler.OnDamageCastle(_enemyAttackPower);
-                Debug.Log("ノックバック");
+                //Debug.Log("ノックバック");
                 _knockback = true;
                 _timer = 0;
                 Vector2 thisPos = transform.position;
@@ -89,7 +124,7 @@ public class EnemyBase : MonoBehaviour
             }
         }
     }
-    public virtual void Homing()
+    void Homing()
     {
         Vector2 castlePos = _castle.transform.position;
         float x = castlePos.x;
@@ -97,11 +132,16 @@ public class EnemyBase : MonoBehaviour
         Vector2 direction = new Vector2(x - transform.position.x, y - transform.position.y).normalized;
         _rb.velocity = direction * _speed;
     }
-    private void OnDestroy()
+
+    public void StartShake(float duration, float strength, int vibrato, float randomness, bool fadeOut)
     {
-        for (int i = 0; i < _numCoin; i++)
+        // 前回の処理が残っていれば停止して初期位置に戻す
+        if (_shakeTweener != null)
         {
-            Instantiate(_coin, transform.position, Quaternion.identity);
+            _shakeTweener.Kill();
+            gameObject.transform.position = _initPosition;
         }
+        // 揺れ開始
+        _shakeTweener = gameObject.transform.DOShakePosition(duration, strength, vibrato, randomness, fadeOut);
     }
 }
