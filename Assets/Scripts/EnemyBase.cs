@@ -32,6 +32,10 @@ public class EnemyBase : MonoBehaviour
     bool _fadeOut;
     private Tweener _shakeTweener;
     private Vector3 _initPosition;
+
+    PauseManager2D _pauseManager = default;
+    Vector3 _velocity;
+    bool _pause = false;
     // Start is called before the first frame update
     void Start()
     {
@@ -40,18 +44,34 @@ public class EnemyBase : MonoBehaviour
         _castleControler = _castle.GetComponent<CastleControler>();
         _rb = GetComponent<Rigidbody2D>();
     }
-
+    void Awake()
+    {
+        _pauseManager = GameObject.FindObjectOfType<PauseManager2D>();  // この処理は Start やると遅いので Awake で行う。OnEnable の方が Start より先に呼ばれるため。
+    }
+    void OnEnable()
+    {
+        // 呼んで欲しいメソッドを登録する。
+        _pauseManager.OnPauseResume += PauseResume;
+    }
+    void OnDisable()
+    {
+        // OnDisable ではメソッドの登録を解除すること。さもないとオブジェクトが無効にされたり破棄されたりした後にエラーになってしまう。
+        _pauseManager.OnPauseResume -= PauseResume;
+    }
     // Update is called once per frame
     void Update()
     {
-        _timer += Time.deltaTime;
-        if (_timer >= _knockbackTime)
+        if (!_pause)
         {
-            _knockback = false;
-        }
-        if (!_knockback)
-        {
-            Homing();
+            _timer += Time.deltaTime;
+            if (_timer >= _knockbackTime)
+            {
+                _knockback = false;
+            }
+            if (!_knockback)
+            {
+                Homing();
+            }
         }
     }
 
@@ -143,5 +163,35 @@ public class EnemyBase : MonoBehaviour
         }
         // 揺れ開始
         _shakeTweener = gameObject.transform.DOShakePosition(duration, strength, vibrato, randomness, fadeOut);
+    }
+
+    void PauseResume(bool isPause)
+    {
+        if (isPause)
+        {
+            Pause();
+        }
+        else
+        {
+           Resume();
+        }
+    }
+    public void Pause()
+    {
+        // 速度・回転を保存し、Rigidbody を停止する
+        
+        _velocity = _rb.velocity;
+        _rb.Sleep();
+        _pause = true;
+        //Debug.Log("PAUSE");
+    }
+
+    public void Resume()
+    {
+        // Rigidbody の活動を再開し、保存しておいた速度・回転を戻す
+        _rb.WakeUp();
+        _pause  = false;
+        _rb.velocity = _velocity;
+        //Debug.Log("RESUME");
     }
 }

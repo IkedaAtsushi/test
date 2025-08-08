@@ -41,6 +41,10 @@ public class PlayerController : MonoBehaviour
     Image _fillimage;
     Color _yellow = Color.yellow;
     Color originalColor;
+
+    PauseManager2D _pauseManager = default;
+    Vector3 _velocity;
+    bool _pause = false;
     // Start is called before the first frame update
     void Start()
     {
@@ -55,62 +59,79 @@ public class PlayerController : MonoBehaviour
         this._animator = GetComponent<Animator>();
         this.gameObject.layer = 8;
     }
-
+    void Awake()
+    {
+        _pauseManager = GameObject.FindObjectOfType<PauseManager2D>();  // この処理は Start やると遅いので Awake で行う。OnEnable の方が Start より先に呼ばれるため。
+    }
+    void OnEnable()
+    {
+        // 呼んで欲しいメソッドを登録する。
+        _pauseManager.OnPauseResume += PauseResume;
+    }
+    void OnDisable()
+    {
+        // OnDisable ではメソッドの登録を解除すること。さもないとオブジェクトが無効にされたり破棄されたりした後にエラーになってしまう。
+        _pauseManager.OnPauseResume -= PauseResume;
+    }
     // Update is called once per frame
     void Update()
     {
+        if (!_pause)
+        {
 
-        _timer += Time.deltaTime;
-        if (!_down)
-        {
-            if (_timer >= _knockbackTime)
+
+            _timer += Time.deltaTime;
+            if (!_down)
             {
-                _h = Input.GetAxisRaw("Horizontal");
-                _v = Input.GetAxisRaw("Vertical");
-                Vector2 dir = new Vector2(_h, _v).normalized;
-                if (_powerup)
+                if (_timer >= _knockbackTime)
                 {
-                    _rb.velocity = dir * _moveSpeed * 1.5f;
-                }
-                else
-                {
-                    _rb.velocity = dir * _moveSpeed;
-                }
-            }
-        }
-        //ダウン時
-        else
-        {
-            _fillimage.color = _yellow;
-            if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.LeftArrow))
-            {
-                _life += _recoveryLife;
-                if (_life >= _maxLife)
-                {
-                    _fillimage.color = originalColor;
-                    _life = _maxLife;
-                    this.gameObject.layer = 8;
-                    _down = false;
+                    _h = Input.GetAxisRaw("Horizontal");
+                    _v = Input.GetAxisRaw("Vertical");
+                    Vector2 dir = new Vector2(_h, _v).normalized;
+                    if (_powerup)
+                    {
+                        _rb.velocity = dir * _moveSpeed * 1.5f;
+                    }
+                    else
+                    {
+                        _rb.velocity = dir * _moveSpeed;
+                    }
                 }
             }
-            if (_timer >= _knockbackTime)
+            //ダウン時
+            else
             {
-                _rb.velocity = new Vector2(0, 0);
+                _fillimage.color = _yellow;
+                if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.LeftArrow))
+                {
+                    _life += _recoveryLife;
+                    if (_life >= _maxLife)
+                    {
+                        _fillimage.color = originalColor;
+                        _life = _maxLife;
+                        this.gameObject.layer = 8;
+                        _down = false;
+                    }
+                }
+                if (_timer >= _knockbackTime)
+                {
+                    _rb.velocity = new Vector2(0, 0);
+                }
             }
-        }
 
-       if(_magicPower >= _maxMagicPower)
-        {
-            _powerup = true;
-            _magicPower = _maxMagicPower;
-        }
-
-       if(_powerup)
-        {
-            _magicPower -= _decreaseMagicPower;
-            if (_magicPower <= 0)
+            if (_magicPower >= _maxMagicPower)
             {
-                _powerup = false;
+                _powerup = true;
+                _magicPower = _maxMagicPower;
+            }
+
+            if (_powerup)
+            {
+                _magicPower -= _decreaseMagicPower;
+                if (_magicPower <= 0)
+                {
+                    _powerup = false;
+                }
             }
         }
         // ライフ表示処理（ゲージ）
@@ -151,5 +172,34 @@ public class PlayerController : MonoBehaviour
     {
         this.gameObject.layer = 7;
         _rb.velocity = new Vector2(0, 0);
+    }
+    void PauseResume(bool isPause)
+    {
+        if (isPause)
+        {
+            Pause();
+        }
+        else
+        {
+            Resume();
+        }
+    }
+    public void Pause()
+    {
+        // 速度・回転を保存し、Rigidbody を停止する
+
+        _velocity = _rb.velocity;
+        _rb.Sleep();
+        _pause = true;
+        //Debug.Log("PAUSE");
+    }
+
+    public void Resume()
+    {
+        // Rigidbody の活動を再開し、保存しておいた速度・回転を戻す
+        _rb.WakeUp();
+        _pause = false;
+        _rb.velocity = _velocity;
+        //Debug.Log("RESUME");
     }
 }
