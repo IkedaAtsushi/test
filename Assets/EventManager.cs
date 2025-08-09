@@ -8,9 +8,11 @@ public class EventManager : MonoBehaviour
     [SerializeField] Text _gameoverText = default;
     [SerializeField] Text _levelText = default;
     [SerializeField] Slider _coinSlider = default;
+    [SerializeField] GameObject _pauseUIPrefab;
+    GameObject _pauseUIInstance;
     public static int _currentCoin = 0;
     int _levelupCoin = 100;
-    int _currentLevel = 1;
+    public int _currentLevel = 1;
     void Start()
     {
         _gameoverText.text = "";
@@ -38,6 +40,15 @@ public class EventManager : MonoBehaviour
         lvUpCoin *= 1.4f;
         _levelupCoin = (int)lvUpCoin;
         _coinSlider.maxValue = _levelupCoin;
+        PauseManager2D _pauseManager = GetComponent<PauseManager2D>();
+        PauseUIManager _pauseUIManager = GetComponent<PauseUIManager>();
+        _pauseManager.PauseResume();
+        //_pauseUIManager.PauseResume();
+
+        if(_pauseUIInstance == null)
+        {
+            _pauseUIInstance = GameObject.Instantiate(_pauseUIPrefab) as GameObject;
+        }
     }
 
     public static void GetCoin(int coin)

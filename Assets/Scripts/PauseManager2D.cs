@@ -11,6 +11,7 @@ public class PauseManager2D : MonoBehaviour
     /// <summary>デリゲートを入れておく変数</summary>
     Pause _onPauseResume = default;
 
+    EventManager _eventManager;
     /// <summary>
     /// 一時停止・再開を入れるデリゲートプロパティ
     /// </summary>
@@ -20,19 +21,16 @@ public class PauseManager2D : MonoBehaviour
         set { _onPauseResume = value; }
     }
 
-    void Update()
+    private void Start()
     {
-        // ESC キーが押されたら一時停止・再開を切り替える
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            PauseResume();
-        }
+        _eventManager = GetComponent<EventManager>();
     }
+   
 
     /// <summary>
     /// 一時停止・再開を切り替える
     /// </summary>
-    void PauseResume()
+    public void PauseResume()
     {
         _pauseFlg = !_pauseFlg;
         _onPauseResume(_pauseFlg);  // これで変数に代入した関数を（全て）呼び出せる

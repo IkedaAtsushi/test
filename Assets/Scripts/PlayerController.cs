@@ -78,8 +78,6 @@ public class PlayerController : MonoBehaviour
     {
         if (!_pause)
         {
-
-
             _timer += Time.deltaTime;
             if (!_down)
             {
@@ -153,12 +151,14 @@ public class PlayerController : MonoBehaviour
                 _down = true;
                 Invoke(nameof(Down), _knockbackTime);
             }
+            //ノックバック処理
             Vector2 thisPos = transform.position;
             float xDistination = thisPos.x - xDirection;
             float yDistination = thisPos.y - yDirection;
             Vector2 knockback = new Vector2(xDistination * _knockbackForce, yDistination * _knockbackForce);
             _rb.velocity = knockback;
             _DamageText.text = _playerAttackPower.ToString();
+
             Vector2 damageTextPosition = new Vector2(xDirection, yDirection + 1.5f);
             Instantiate(_DamageText, damageTextPosition, Quaternion.identity,_canvas.transform);
         }
