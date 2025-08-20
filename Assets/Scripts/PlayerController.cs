@@ -21,7 +21,7 @@ public class PlayerController : MonoBehaviour
     [Tooltip("攻撃力")]
     [SerializeField] public int _playerAttackPower;
     [Tooltip("プレイヤーの速さ")]
-    [SerializeField] float _moveSpeed = 5f;
+    [SerializeField] public  float _moveSpeed = 5f;
     [Tooltip("ノックバックの強さ")]
     [SerializeField] float _knockbackForce = 3f;
     [Tooltip("ノックバックの長さ")]
@@ -167,6 +167,11 @@ public class PlayerController : MonoBehaviour
     public static void GetMP(float mp)
     {
         _magicPower += mp;
+    }
+
+    public  void UpSpeed()
+    {
+        _moveSpeed *= 2f;
     }
     void Down()
     {

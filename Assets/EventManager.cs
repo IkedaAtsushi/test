@@ -43,12 +43,8 @@ public class EventManager : MonoBehaviour
         PauseManager2D _pauseManager = GetComponent<PauseManager2D>();
         PauseUIManager _pauseUIManager = GetComponent<PauseUIManager>();
         _pauseManager.PauseResume();
+        _pauseUIPrefab.SetActive(true);
         //_pauseUIManager.PauseResume();
-
-        if(_pauseUIInstance == null)
-        {
-            _pauseUIInstance = GameObject.Instantiate(_pauseUIPrefab) as GameObject;
-        }
     }
 
     public static void GetCoin(int coin)
