@@ -7,7 +7,7 @@ public class PlayerController : MonoBehaviour
 {
     [Header("ステータス")]
     [Tooltip("体力の最大値")]
-    [SerializeField] int _maxLife;
+    [SerializeField] public int _maxLife;
     [Tooltip("体力を表示するゲージ")]
     [SerializeField] Slider _lifeGauge;
     [Tooltip("体力の回復量")]
@@ -172,6 +172,21 @@ public class PlayerController : MonoBehaviour
     public  void UpSpeed()
     {
         _moveSpeed *= 2f;
+    }
+
+    public void UpPower()
+    {
+        float p = (float)_playerAttackPower;
+        p *= 2f;
+        _playerAttackPower = (int)p;
+    }
+
+    public void UpMaxHp()
+    {
+        float h = (float)_maxLife;
+        h *= 2f;
+        _maxLife = (int)h;
+        _lifeGauge.maxValue = _maxLife;
     }
     void Down()
     {
