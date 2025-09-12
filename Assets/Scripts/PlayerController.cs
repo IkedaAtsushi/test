@@ -28,6 +28,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float _knockbackTime;
     [SerializeField] Text _DamageText;
     [SerializeField] private Canvas _canvas;
+    [SerializeField] Sprite _DeathSprite;
+    Sprite _idolSprite;
     public int _life;
     public static float _magicPower;
     float _timer;
@@ -35,6 +37,7 @@ public class PlayerController : MonoBehaviour
     public bool _powerup = false;
 
     Rigidbody2D _rb = default;
+    SpriteRenderer _sr;
     Animator _animator;
     float _h;
     float _v;
@@ -54,6 +57,8 @@ public class PlayerController : MonoBehaviour
         _magicPowerGauge.maxValue = _maxMagicPower;
         _timer = 1;
         _rb = GetComponent<Rigidbody2D>();
+        _sr = GetComponent<SpriteRenderer>();
+        _idolSprite = _sr.sprite;
         _fillimage = _lifeGauge.fillRect.GetComponent<Image>();
         originalColor = _fillimage.color;
         this._animator = GetComponent<Animator>();
@@ -99,6 +104,8 @@ public class PlayerController : MonoBehaviour
             //ƒ_ƒEƒ“Žž
             else
             {
+                _animator.enabled = false;
+                _sr.sprite = _DeathSprite;
                 _fillimage.color = _yellow;
                 if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.LeftArrow))
                 {
@@ -108,6 +115,8 @@ public class PlayerController : MonoBehaviour
                         _fillimage.color = originalColor;
                         _life = _maxLife;
                         this.gameObject.layer = 8;
+                        _sr.sprite = _idolSprite;
+                        _animator.enabled = true;
                         _down = false;
                     }
                 }
@@ -186,6 +195,7 @@ public class PlayerController : MonoBehaviour
         float h = (float)_maxLife;
         h *= 2f;
         _maxLife = (int)h;
+        _life = _maxLife;
         _lifeGauge.maxValue = _maxLife;
     }
     void Down()

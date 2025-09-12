@@ -18,10 +18,13 @@ public class EnemyBase : MonoBehaviour
     [Tooltip("コインドロップ数")]
     [SerializeField] int _numCoin;
     [SerializeField] GameObject _coin;
+    [SerializeField] Sprite _damageSprite;
+    Sprite idolSprite;
     PlayerController _playerController;
     CastleControler _castleControler;
     GameObject _castle;
     Rigidbody2D _rb;
+    SpriteRenderer _sr;
     bool _knockback = false;
     float _timer = 0;
 
@@ -39,10 +42,13 @@ public class EnemyBase : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+
         _playerController = _player.GetComponent<PlayerController>();
         _castle = GameObject.FindGameObjectWithTag("Castle");
         _castleControler = _castle.GetComponent<CastleControler>();
         _rb = GetComponent<Rigidbody2D>();
+        _sr = GetComponent<SpriteRenderer>();
+        idolSprite = _sr.sprite;
     }
     void Awake()
     {
@@ -73,6 +79,16 @@ public class EnemyBase : MonoBehaviour
                 Homing();
             }
         }
+        //スプライト反転
+        if (this.transform.position.x < 0 && !_sr.flipX)
+        {
+            _sr.flipX = true;
+        }
+
+        if (this.transform.position.x > 0 && _sr.flipX)
+        {
+            _sr.flipX = false;
+        }
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
@@ -88,6 +104,8 @@ public class EnemyBase : MonoBehaviour
                 {
                     if (_enemyHP > 0)
                     {
+                        _sr.sprite = _damageSprite;
+                        Invoke(nameof(IdolSprite), 0.5f);
                         if (_playerController._powerup)
                         {
                             _knockback = true;
@@ -121,7 +139,7 @@ public class EnemyBase : MonoBehaviour
                 }
             }
 
-            
+
         }
     }
 
@@ -153,6 +171,10 @@ public class EnemyBase : MonoBehaviour
         _rb.velocity = direction * _speed;
     }
 
+    void IdolSprite()
+    {
+        _sr.sprite = idolSprite;
+    }
     public void StartShake(float duration, float strength, int vibrato, float randomness, bool fadeOut)
     {
         // 前回の処理が残っていれば停止して初期位置に戻す
@@ -173,13 +195,13 @@ public class EnemyBase : MonoBehaviour
         }
         else
         {
-           Resume();
+            Resume();
         }
     }
     public void Pause()
     {
         // 速度・回転を保存し、Rigidbody を停止する
-        
+
         _velocity = _rb.velocity;
         _rb.Sleep();
         _pause = true;
@@ -190,7 +212,7 @@ public class EnemyBase : MonoBehaviour
     {
         // Rigidbody の活動を再開し、保存しておいた速度・回転を戻す
         _rb.WakeUp();
-        _pause  = false;
+        _pause = false;
         _rb.velocity = _velocity;
         //Debug.Log("RESUME");
     }
