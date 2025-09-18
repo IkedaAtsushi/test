@@ -1,3 +1,4 @@
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
 /// <summary>
@@ -21,7 +22,7 @@ public class PlayerController : MonoBehaviour
     [Tooltip("攻撃力")]
     [SerializeField] public int _playerAttackPower;
     [Tooltip("プレイヤーの速さ")]
-    [SerializeField] public  float _moveSpeed = 5f;
+    [SerializeField] public float _moveSpeed = 5f;
     [Tooltip("ノックバックの強さ")]
     [SerializeField] float _knockbackForce = 3f;
     [Tooltip("ノックバックの長さ")]
@@ -29,6 +30,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] Text _DamageText;
     [SerializeField] private Canvas _canvas;
     [SerializeField] Sprite _DeathSprite;
+    [SerializeField] GameObject _Fire;
     Sprite _idolSprite;
     public int _life;
     public static float _magicPower;
@@ -39,6 +41,8 @@ public class PlayerController : MonoBehaviour
     Rigidbody2D _rb = default;
     SpriteRenderer _sr;
     Animator _animator;
+    AudioSource _audioSource;
+    [SerializeField] AudioClip _powerUpSE;
     float _h;
     float _v;
     Image _fillimage;
@@ -48,6 +52,18 @@ public class PlayerController : MonoBehaviour
     PauseManager2D _pauseManager = default;
     Vector3 _velocity;
     bool _pause = false;
+
+    [SerializeField] AudioClip _attackSE;
+    [SerializeField] AudioClip _deathSE;
+    [SerializeField] AudioClip _recoverySE;
+
+    [SerializeField] float _duration;
+    [SerializeField] float _strength;
+    [SerializeField] int _vibrato;
+    [SerializeField] float _randomness;
+    bool _fadeOut;
+    private Tweener _shakeTweener;
+    private Vector3 _initPosition;
     // Start is called before the first frame update
     void Start()
     {
@@ -58,6 +74,7 @@ public class PlayerController : MonoBehaviour
         _timer = 1;
         _rb = GetComponent<Rigidbody2D>();
         _sr = GetComponent<SpriteRenderer>();
+        _audioSource = GetComponent<AudioSource>();
         _idolSprite = _sr.sprite;
         _fillimage = _lifeGauge.fillRect.GetComponent<Image>();
         originalColor = _fillimage.color;
@@ -93,7 +110,7 @@ public class PlayerController : MonoBehaviour
                     Vector2 dir = new Vector2(_h, _v).normalized;
                     if (_powerup)
                     {
-                        _rb.velocity = dir * _moveSpeed * 1.5f;
+                        _rb.velocity = dir * _moveSpeed * 1.8f;
                     }
                     else
                     {
@@ -109,6 +126,7 @@ public class PlayerController : MonoBehaviour
                 _fillimage.color = _yellow;
                 if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.LeftArrow))
                 {
+                    _audioSource.PlayOneShot(_attackSE);
                     _life += _recoveryLife;
                     if (_life >= _maxLife)
                     {
@@ -118,6 +136,12 @@ public class PlayerController : MonoBehaviour
                         _sr.sprite = _idolSprite;
                         _animator.enabled = true;
                         _down = false;
+                        _audioSource.PlayOneShot(_recoverySE);
+                    }
+                    else
+                    {
+                        _initPosition = transform.position;
+                        StartShake(_duration, _strength, _vibrato, _randomness, _fadeOut);
                     }
                 }
                 if (_timer >= _knockbackTime)
@@ -128,8 +152,15 @@ public class PlayerController : MonoBehaviour
 
             if (_magicPower >= _maxMagicPower)
             {
-                _powerup = true;
                 _magicPower = _maxMagicPower;
+                if (!_powerup)
+                {
+                    _powerup = true;
+                    _Fire.SetActive(true);
+                    GameObject bgm = GameObject.Find("GameBGM");
+                    BGMManager bm = bgm.GetComponent<BGMManager>();
+                    bm.PowerupBGM();
+                }
             }
 
             if (_powerup)
@@ -138,6 +169,10 @@ public class PlayerController : MonoBehaviour
                 if (_magicPower <= 0)
                 {
                     _powerup = false;
+                    _Fire.SetActive(false);
+                    GameObject bgm = GameObject.Find("GameBGM");
+                    BGMManager bm = bgm.GetComponent<BGMManager>();
+                    bm.StartBGM();
                 }
             }
         }
@@ -148,8 +183,9 @@ public class PlayerController : MonoBehaviour
         _magicPowerGauge.value = _magicPower;
     }
 
-    public void OnDamagePlayer(int damage, float xDirection, float yDirection)
+    public void OnDamagePlayer(int damage, float xDirection, float yDirection, bool powerup)
     {
+        _audioSource.PlayOneShot(_attackSE);
         if (!_down)
         {
             _life = _life - damage;
@@ -158,18 +194,28 @@ public class PlayerController : MonoBehaviour
             {
                 _life = 0;
                 _down = true;
+                _audioSource.PlayOneShot(_deathSE);
                 Invoke(nameof(Down), _knockbackTime);
             }
-            //ノックバック処理
-            Vector2 thisPos = transform.position;
-            float xDistination = thisPos.x - xDirection;
-            float yDistination = thisPos.y - yDirection;
-            Vector2 knockback = new Vector2(xDistination * _knockbackForce, yDistination * _knockbackForce);
-            _rb.velocity = knockback;
-            _DamageText.text = _playerAttackPower.ToString();
-
+            if (!powerup)
+            {
+                //ノックバック処理
+                Vector2 thisPos = transform.position;
+                float xDistination = thisPos.x - xDirection;
+                float yDistination = thisPos.y - yDirection;
+                Vector2 knockback = new Vector2(xDistination * _knockbackForce, yDistination * _knockbackForce);
+                _rb.velocity = knockback;
+            }
+            //ダメージ表示
+            float p = (float)_playerAttackPower;
+            if (powerup)
+            {
+                p *= 2f;
+            }
+            int _p = (int)p;
+            _DamageText.text = _p.ToString();
             Vector2 damageTextPosition = new Vector2(xDirection, yDirection + 1.5f);
-            Instantiate(_DamageText, damageTextPosition, Quaternion.identity,_canvas.transform);
+            Instantiate(_DamageText, damageTextPosition, Quaternion.identity, _canvas.transform);
         }
     }
 
@@ -178,23 +224,31 @@ public class PlayerController : MonoBehaviour
         _magicPower += mp;
     }
 
-    public  void UpSpeed()
+    public void UpSpeed()
     {
-        _moveSpeed *= 2f;
+        _moveSpeed *= 1.2f;
     }
 
     public void UpPower()
     {
         float p = (float)_playerAttackPower;
-        p *= 2f;
+        p *= 1.6f;
         _playerAttackPower = (int)p;
+    }
+
+    public void SE()
+    {
+        _audioSource.PlayOneShot(_powerUpSE);
     }
 
     public void UpMaxHp()
     {
         float h = (float)_maxLife;
-        h *= 2f;
+        float rh = (float)_recoveryLife;
+        h *= 1.2f;
+        rh *= 1.2f;
         _maxLife = (int)h;
+        _recoveryLife = (int)rh;
         _life = _maxLife;
         _lifeGauge.maxValue = _maxLife;
     }
@@ -202,6 +256,17 @@ public class PlayerController : MonoBehaviour
     {
         this.gameObject.layer = 7;
         _rb.velocity = new Vector2(0, 0);
+    }
+    public void StartShake(float duration, float strength, int vibrato, float randomness, bool fadeOut)
+    {
+        // 前回の処理が残っていれば停止して初期位置に戻す
+        if (_shakeTweener != null)
+        {
+            _shakeTweener.Kill();
+            gameObject.transform.position = _initPosition;
+        }
+        // 揺れ開始
+        _shakeTweener = gameObject.transform.DOShakePosition(duration, strength, vibrato, randomness, fadeOut);
     }
     void PauseResume(bool isPause)
     {

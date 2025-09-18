@@ -8,11 +8,14 @@ public class ItemBase : MonoBehaviour
 {
     Rigidbody2D _rb;
     PauseManager2D _pauseManager = default;
+    AudioSource _audioSource;
+    [SerializeField] AudioClip _getSE;
     Vector3 _velocity;
     // Start is called before the first frame update
     void Start()
     {
         _rb = GetComponent<Rigidbody2D>();
+        _audioSource = GetComponent<AudioSource>();
         float x = Random.Range(-10, 10);
         float y = Random.Range(-10, 10);
         _rb.velocity = new Vector2(x, y);
@@ -35,6 +38,7 @@ public class ItemBase : MonoBehaviour
     {
         if (collision.gameObject.tag == "Player")
         {
+            AudioSource.PlayClipAtPoint(_getSE, this.transform.position);
             Destroy(this.gameObject);
         }
     }

@@ -8,7 +8,6 @@ public class EnemyBase : MonoBehaviour
     [SerializeField] int _enemyHP = 5;
     [Tooltip("攻撃力")]
     [SerializeField] int _enemyAttackPower = 1;
-    [SerializeField] GameObject _player;
     [Tooltip("スピード")]
     [SerializeField] float _speed;
     [Tooltip("ノックバックの強さ")]
@@ -16,15 +15,21 @@ public class EnemyBase : MonoBehaviour
     [Tooltip("ノックバックの長さ")]
     [SerializeField] float _knockbackTime;
     [Tooltip("コインドロップ数")]
-    [SerializeField] int _numCoin;
+    [SerializeField] int _minimumCoin;
+    [SerializeField] int _maxCoin;
     [SerializeField] GameObject _coin;
-    [SerializeField] Sprite _damageSprite;
+    [SerializeField] GameObject _magic;
+    [SerializeField] AudioClip _damageSE;
+    int _dropCoin;
+    GameObject _player;
     Sprite idolSprite;
     PlayerController _playerController;
     CastleControler _castleControler;
     GameObject _castle;
     Rigidbody2D _rb;
     SpriteRenderer _sr;
+    Animator _anim;
+    AudioSource _audioSource;
     bool _knockback = false;
     float _timer = 0;
 
@@ -40,14 +45,16 @@ public class EnemyBase : MonoBehaviour
     Vector3 _velocity;
     bool _pause = false;
     // Start is called before the first frame update
-    void Start()
+    public void Start()
     {
-
+        _player = GameObject.FindGameObjectWithTag("Player");
         _playerController = _player.GetComponent<PlayerController>();
         _castle = GameObject.FindGameObjectWithTag("Castle");
         _castleControler = _castle.GetComponent<CastleControler>();
         _rb = GetComponent<Rigidbody2D>();
         _sr = GetComponent<SpriteRenderer>();
+        _anim = GetComponent<Animator>();
+        _audioSource = GetComponent<AudioSource>();
         idolSprite = _sr.sprite;
     }
     void Awake()
@@ -102,12 +109,16 @@ public class EnemyBase : MonoBehaviour
                 float yPos = thisPos.y;
                 if (!_playerController._down)
                 {
+                    if (_playerController._powerup)
+                    {
+                        _audioSource.PlayOneShot(_damageSE);
+                    }
                     if (_enemyHP > 0)
                     {
-                        _sr.sprite = _damageSprite;
-                        Invoke(nameof(IdolSprite), 0.5f);
+
                         if (_playerController._powerup)
                         {
+                            _playerController.OnDamagePlayer(0, xPos, yPos, true);
                             _knockback = true;
                             _timer = 0;
                             float xDis = thisPos.x - _player.transform.position.x;
@@ -116,13 +127,13 @@ public class EnemyBase : MonoBehaviour
                             _rb.velocity = kb * _knockbackForce * 1.4f;
 
                             float p = (float)_playerController._playerAttackPower;
-                            p *= 1.5f;
+                            p *= 2f;
                             int _p = (int)p;
                             _enemyHP -= _p;
                         }
                         else
                         {
-                            _playerController.OnDamagePlayer(_enemyAttackPower, xPos, yPos);
+                            _playerController.OnDamagePlayer(_enemyAttackPower, xPos, yPos,false);
                             _enemyHP -= _playerController._playerAttackPower;
                             _initPosition = transform.position;
                             StartShake(_duration, _strength, _vibrato, _randomness, _fadeOut);
@@ -130,10 +141,17 @@ public class EnemyBase : MonoBehaviour
                     }
                     if (_enemyHP <= 0)
                     {
-                        for (int i = 0; i < _numCoin; i++)
+                        _dropCoin = Random.Range(_minimumCoin, _maxCoin + 1);
+                        for (int i = 0; i < _dropCoin; i++)
                         {
                             Instantiate(_coin, transform.position, Quaternion.identity);
                         }
+                        int m = Random.Range(0, 1);
+                        if (m == 0)
+                        {
+                            Instantiate(_magic, transform.position, Quaternion.identity);
+                        }
+
                         Destroy(this.gameObject);
                     }
                 }
@@ -171,10 +189,7 @@ public class EnemyBase : MonoBehaviour
         _rb.velocity = direction * _speed;
     }
 
-    void IdolSprite()
-    {
-        _sr.sprite = idolSprite;
-    }
+
     public void StartShake(float duration, float strength, int vibrato, float randomness, bool fadeOut)
     {
         // 前回の処理が残っていれば停止して初期位置に戻す
@@ -205,6 +220,7 @@ public class EnemyBase : MonoBehaviour
         _velocity = _rb.velocity;
         _rb.Sleep();
         _pause = true;
+        _anim.enabled = false;
         //Debug.Log("PAUSE");
     }
 
@@ -214,6 +230,7 @@ public class EnemyBase : MonoBehaviour
         _rb.WakeUp();
         _pause = false;
         _rb.velocity = _velocity;
+        _anim.enabled = true;
         //Debug.Log("RESUME");
     }
 }

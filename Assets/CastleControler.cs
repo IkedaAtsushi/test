@@ -12,8 +12,10 @@ public class CastleControler : MonoBehaviour
     [Tooltip("ëÃóÕÇï\é¶Ç∑ÇÈÉQÅ[ÉW")]
     [SerializeField] Slider _lifeGauge;
     int _life;
-    [SerializeField]GameObject _eventManager;
+    [SerializeField] GameObject _eventManager;
     EventManager _em;
+    AudioSource _audioSource;
+    [SerializeField] AudioClip _damage;
 
     [SerializeField] float _duration;
     [SerializeField] float _strength;
@@ -28,6 +30,7 @@ public class CastleControler : MonoBehaviour
         _life = _maxLife;
         _lifeGauge.maxValue = _maxLife;
         _em = _eventManager.GetComponent<EventManager>();
+        _audioSource = GetComponent<AudioSource>();
     }
 
     // Update is called once per frame
@@ -39,7 +42,8 @@ public class CastleControler : MonoBehaviour
     public void OnDamageCastle(int damage)
     {
         _life -= damage;
-        StartShake(_duration, _strength, _vibrato,  _randomness, _fadeOut);
+        _audioSource.PlayOneShot(_damage);
+        StartShake(_duration, _strength, _vibrato, _randomness, _fadeOut);
         if (_life <= 0)
         {
             _em.Gameover();
