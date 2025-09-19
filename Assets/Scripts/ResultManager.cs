@@ -1,19 +1,16 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class ResultManager : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+    [SerializeField] Text _resultText;
+    private void OnEnable()
     {
-        //リザルト画面にゲームオーバー時のコイン数を保存
-        int resultCoin = EventManager._currentCoin;
+        GameObject eventmanager = GameObject.Find("EventManager");
+        EventManager em = eventmanager.GetComponent<EventManager>();
+        _resultText.text = em.minute.ToString("00") + ":" + ((int)em.seconds).ToString("00");
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 }

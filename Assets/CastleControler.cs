@@ -22,6 +22,7 @@ public class CastleControler : MonoBehaviour
     [SerializeField] int _vibrato;
     [SerializeField] float _randomness;
     bool _fadeOut;
+    bool _gameover = false;
     private Tweener _shakeTweener;
     private Vector3 _initPosition;
     // Start is called before the first frame update
@@ -44,8 +45,9 @@ public class CastleControler : MonoBehaviour
         _life -= damage;
         _audioSource.PlayOneShot(_damage);
         StartShake(_duration, _strength, _vibrato, _randomness, _fadeOut);
-        if (_life <= 0)
+        if (_life <= 0 && !_gameover)
         {
+            _gameover = true;
             _em.Gameover();
         }
     }

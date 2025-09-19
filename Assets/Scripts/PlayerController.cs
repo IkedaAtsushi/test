@@ -22,7 +22,7 @@ public class PlayerController : MonoBehaviour
     [Tooltip("攻撃力")]
     [SerializeField] public int _playerAttackPower;
     [Tooltip("プレイヤーの速さ")]
-    [SerializeField] public float _moveSpeed = 5f;
+    [SerializeField] public float _firstMoveSpeed = 5f;
     [Tooltip("ノックバックの強さ")]
     [SerializeField] float _knockbackForce = 3f;
     [Tooltip("ノックバックの長さ")]
@@ -34,6 +34,7 @@ public class PlayerController : MonoBehaviour
     Sprite _idolSprite;
     public int _life;
     public static float _magicPower;
+    public float _moveSpeed;
     float _timer;
     public bool _down = false;
     public bool _powerup = false;
@@ -67,7 +68,11 @@ public class PlayerController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        _maxLife = 150;
+        _playerAttackPower = 5;
         _life = _maxLife;
+        _recoveryLife = 12;
+        _moveSpeed = _firstMoveSpeed;
         _lifeGauge.maxValue = _maxLife;
         _magicPower = 0;
         _magicPowerGauge.maxValue = _maxMagicPower;
@@ -210,7 +215,7 @@ public class PlayerController : MonoBehaviour
             float p = (float)_playerAttackPower;
             if (powerup)
             {
-                p *= 2f;
+                p *= 1.1f;
             }
             int _p = (int)p;
             _DamageText.text = _p.ToString();
@@ -226,13 +231,13 @@ public class PlayerController : MonoBehaviour
 
     public void UpSpeed()
     {
-        _moveSpeed *= 1.2f;
+        _moveSpeed += 2f;
     }
 
     public void UpPower()
     {
         float p = (float)_playerAttackPower;
-        p *= 1.6f;
+        p *= 1.4f;
         _playerAttackPower = (int)p;
     }
 
@@ -244,16 +249,26 @@ public class PlayerController : MonoBehaviour
     public void UpMaxHp()
     {
         float h = (float)_maxLife;
-        float rh = (float)_recoveryLife;
-        h *= 1.2f;
-        rh *= 1.2f;
+        //float rh = (float)_recoveryLife;
+        h *= 1.5f;
+        // rh *= 1.2f;
         _maxLife = (int)h;
-        _recoveryLife = (int)rh;
+        // _recoveryLife = (int)rh;
+        _recoveryLife += 15;
+        if (_recoveryLife > 100)
+        {
+            _recoveryLife = 100;
+        }
         _life = _maxLife;
         _lifeGauge.maxValue = _maxLife;
     }
     void Down()
     {
+        _recoveryLife -= 3;
+        if (_recoveryLife <= 1)
+        {
+            _recoveryLife = 2;
+        }
         this.gameObject.layer = 7;
         _rb.velocity = new Vector2(0, 0);
     }

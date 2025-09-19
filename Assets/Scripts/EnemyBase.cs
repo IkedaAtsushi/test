@@ -127,7 +127,7 @@ public class EnemyBase : MonoBehaviour
                             _rb.velocity = kb * _knockbackForce * 1.4f;
 
                             float p = (float)_playerController._playerAttackPower;
-                            p *= 2f;
+                            p *= 1.1f;
                             int _p = (int)p;
                             _enemyHP -= _p;
                         }
@@ -146,7 +146,7 @@ public class EnemyBase : MonoBehaviour
                         {
                             Instantiate(_coin, transform.position, Quaternion.identity);
                         }
-                        int m = Random.Range(0, 1);
+                        int m = Random.Range(0, 2);
                         if (m == 0)
                         {
                             Instantiate(_magic, transform.position, Quaternion.identity);

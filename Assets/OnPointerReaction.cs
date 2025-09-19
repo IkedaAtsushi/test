@@ -5,7 +5,7 @@ using UnityEngine.EventSystems;
 
 public class OnPointerReaction : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 {
-    [SerializeField] GameObject _message;
+    [SerializeField] GameObject _message = default;
     [SerializeField] Vector3 _targetScale = new Vector3(2f, 2f, 2f);
     Vector3 _firstScale;
     [SerializeField] float _speed = 1f;

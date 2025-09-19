@@ -5,8 +5,13 @@ using UnityEngine.UI;
 
 public class EnemyGenerator : MonoBehaviour
 {
-    [SerializeField] float _cooltime;
+    [SerializeField] float _firstcooltime;
     [SerializeField] GameObject[] _level1;
+    [SerializeField] GameObject[] _level2;
+    [SerializeField] GameObject[] _level3;
+    [SerializeField] GameObject[] _level4;
+    [SerializeField] GameObject[] _level5;
+    [SerializeField] GameObject[] _level6;
     [SerializeField] Transform _rightRangeA;
     [SerializeField] Transform _rightRangeB;
     [SerializeField] Transform _leftRangeA;
@@ -17,6 +22,7 @@ public class EnemyGenerator : MonoBehaviour
     [SerializeField] Transform _downRangeB;
 
     float _time;
+    float _cooltime;
     float _gameTimer;
     float x;
     float y;
@@ -41,6 +47,7 @@ public class EnemyGenerator : MonoBehaviour
 
     private void Start()
     {
+        _cooltime = _firstcooltime;
         _time = _cooltime;
     }
     private void Update()
@@ -73,8 +80,37 @@ public class EnemyGenerator : MonoBehaviour
                 x = Random.Range(_downRangeA.position.x, _downRangeB.position.x);
                 y = Random.Range(_downRangeA.position.y, _downRangeB.position.y);
             }
-
-            Instantiate(_level1[Random.Range(0,_level1.Length)], new Vector3(x, y, 0), Quaternion.identity);
+            if (_gameTimer < 30)
+            {
+                Instantiate(_level1[Random.Range(0, _level1.Length)], new Vector3(x, y, 0), Quaternion.identity);
+            }
+            else if (_gameTimer < 60)
+            {
+                Instantiate(_level2[Random.Range(0, _level2.Length)], new Vector3(x, y, 0), Quaternion.identity);
+            }
+            else if (_gameTimer < 90)
+            {
+                Instantiate(_level3[Random.Range(0, _level3.Length)], new Vector3(x, y, 0), Quaternion.identity);
+                _cooltime = 2;
+            }
+            else if (_gameTimer < 120)
+            {
+                Instantiate(_level4[Random.Range(0, _level4.Length)], new Vector3(x, y, 0), Quaternion.identity);
+            }
+            else if (_gameTimer < 300)
+            {
+                Instantiate(_level5[Random.Range(0, _level5.Length)], new Vector3(x, y, 0), Quaternion.identity);
+                _cooltime = 1;
+            }
+            else
+            {
+                Instantiate(_level5[Random.Range(0, _level5.Length)], new Vector3(x, y, 0), Quaternion.identity);
+                int rand = Random.Range(0, 2);
+                if (rand == 0)
+                {
+                    Instantiate(_level6[Random.Range(0, _level6.Length)], new Vector3(x + 0.1f, y + 0.1f, 0), Quaternion.identity);
+                }
+            }
 
             _time = 0;
         }
