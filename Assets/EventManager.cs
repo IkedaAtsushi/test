@@ -30,7 +30,6 @@ public class EventManager : MonoBehaviour
         _gameoverText.text = "";
         _coinSlider.maxValue = _levelupCoin;
 
-        _pauseManager = GetComponent<PauseManager2D>();
         _pauseUIManager = GetComponent<PauseUIManager>();
         _audioSource = GetComponent<AudioSource>();
 

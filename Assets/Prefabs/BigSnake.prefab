@@ -103,7 +103,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _enemyHP: 1000
   _enemyAttackPower: 200
-  _speed: 0.09
+  _speed: 0.1
   _knockbackForce: 8
   _knockbackTime: 0.1
   _minimumCoin: 15

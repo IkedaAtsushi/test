@@ -115,7 +115,7 @@ public class PlayerController : MonoBehaviour
                     Vector2 dir = new Vector2(_h, _v).normalized;
                     if (_powerup)
                     {
-                        _rb.velocity = dir * _moveSpeed * 1.8f;
+                        _rb.velocity = dir * _moveSpeed * 1.2f;
                     }
                     else
                     {
@@ -231,7 +231,18 @@ public class PlayerController : MonoBehaviour
 
     public void UpSpeed()
     {
-        _moveSpeed += 2f;
+        if (_moveSpeed > 2f)
+        {
+            _moveSpeed *= 1.5f;
+        }
+        else if (_moveSpeed > 5f)
+        {
+            _moveSpeed *= 1.2f;
+        }
+        else
+        {
+            _moveSpeed += 1f;
+        }
     }
 
     public void UpPower()
@@ -264,10 +275,10 @@ public class PlayerController : MonoBehaviour
     }
     void Down()
     {
-        _recoveryLife -= 3;
-        if (_recoveryLife <= 1)
+        _recoveryLife -= 1;
+        if (_recoveryLife <= 5)
         {
-            _recoveryLife = 2;
+            _recoveryLife = 5;
         }
         this.gameObject.layer = 7;
         _rb.velocity = new Vector2(0, 0);

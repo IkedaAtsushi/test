@@ -101,7 +101,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b3fc06c76b2f4640ac3b6311df42ef4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _enemyHP: 100
+  _enemyHP: 60
   _enemyAttackPower: 75
   _speed: 0.1
   _knockbackForce: 8
